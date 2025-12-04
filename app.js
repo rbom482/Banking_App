@@ -141,3 +141,32 @@ document.getElementById("withdraw-btn").addEventListener("click", () => {
   showAlert(`Transfer of $${amount.toFixed(2)} completed.`, "success");
 
 });
+// -------------------------------------------
+// Account Number Mask / Unmask
+// -------------------------------------------
+
+const accountNumber = "102230379866";
+const eyeBtn = document.getElementById("see-account-number");
+const accountNoText = document.getElementById("account-no-text");
+let accountNoVisible = false;
+
+eyeBtn.addEventListener("click", () => {
+  accountNoVisible = !accountNoVisible;
+
+  if (accountNoVisible) {
+    // Show full account number
+    accountNoText.textContent = accountNumber;
+
+    // Toggle icon (Font Awesome)
+    eyeBtn.classList.remove("fa-eye-slash");
+    eyeBtn.classList.add("fa-eye");
+  } else {
+    // Mask Number
+    accountNoText.textContent = "********" + accountNumber.slice(-3);
+
+    // Toggle icon back
+    eyeBtn.classList.remove("fa-eye");
+    eyeBtn.classList.add("fa-eye-slash");
+  }
+});
+

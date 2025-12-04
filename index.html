@@ -12,6 +12,8 @@
   >
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
   <!-- Your CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
@@ -71,17 +73,20 @@
             <div class="card-body">
               <p class="card-text mb-0"><small class="text-body-secondary">Account Details</small></p>
 
-              <p class="card-text">
+                              <p class="mb-1">
                 Account Number:
-                <span id="acct-number">********123</span>
-                <i class="bi bi-eye-slash ms-2" id="toggle-acct"></i><br>
+                <span id="account-no-text">********866</span>
+                </p>
 
-                Account Holder Name: <strong>Becca</strong>
-              </p>
+                <p class="mb-2">
+                <i id="see-account-number" 
+                     class="fa-solid fa-eye-slash eye-toggle-icon"
+                    title="Show/Hide Account Number"></i>
+                </p>
 
-              <p class="card-text mb-0">
-                <small class="text-body-secondary">Account Balance</small>
-              </p>
+                <p>
+                     Account Holder: <strong>Becca</strong>
+                </p>
 
               <p class="card-text fs-3 fw-semibold" id="balance">$0.00</p>
             </div>
