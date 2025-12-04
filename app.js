@@ -1,28 +1,10 @@
-// ----- Navigation Switching -----
-const navLinks = document.querySelectorAll("#bank-nav .nav-link");
-const screens = document.querySelectorAll(".screen");
-
-navLinks.forEach(link => {
-  link.addEventListener("click", (e) => {
-    e.preventDefault();
-    
-    const target = link.getAttribute("data-screen");
-
-    navLinks.forEach(l => l.classList.remove("active"));
-    link.classList.add("active");
-
-    screens.forEach(s => s.classList.remove("active"));
-    document.getElementById(target).classList.add("active");
-  });
-});
 // -------------------------------------------
-// 🪄 Witch Mode Toggle (Dark / Light Switch)
+// 🪄 Witch Mode Toggle
 // -------------------------------------------
-
 const themeIcon = document.getElementById("theme-icon");
 const body = document.body;
 
-// default mode
+// default mode = witch mode
 body.classList.add("witch-mode");
 let isWitch = true;
 
@@ -32,93 +14,100 @@ themeIcon.addEventListener("click", () => {
   if (isWitch) {
     body.classList.remove("light-mode");
     body.classList.add("witch-mode");
-    themeIcon.classList.remove("bi-sun-fill");
-    themeIcon.classList.add("bi-moon-stars");
+    themeIcon.classList.remove("fa-sun");
+    themeIcon.classList.add("fa-moon");
   } else {
     body.classList.remove("witch-mode");
     body.classList.add("light-mode");
-    themeIcon.classList.remove("bi-moon-stars");
-    themeIcon.classList.add("bi-sun-fill");
+    themeIcon.classList.remove("fa-moon");
+    themeIcon.classList.add("fa-sun");
   }
 });
 
+// -------------------------------------------
+// Account Number Mask / Unmask
+// -------------------------------------------
+const accountNumber = "102230379866";
+const eyeBtn = document.getElementById("see-account-number");
+const accountNoText = document.getElementById("account-no-text");
+let accountNoVisible = false;
 
-// ALERT SYSTEM
-function showAlert(message, type = "success") {
-  const alertArea = document.getElementById("alert-area");
+eyeBtn.addEventListener("click", () => {
+  accountNoVisible = !accountNoVisible;
 
-  let icon = "";
-  if (type === "success") icon = `<i class="bi bi-check-circle-fill me-2"></i>`;
-  if (type === "danger") icon = `<i class="bi bi-x-circle-fill me-2"></i>`;
+  if (accountNoVisible) {
+    // Show full account number
+    accountNoText.innerText = accountNumber;
 
-  const alertDiv = document.createElement("div");
-  alertDiv.className = `alert alert-${type} alert-dismissible fade show alert-slide`;
-  alertDiv.role = "alert";
-  alertDiv.innerHTML = `
-    ${icon} ${message}
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    // FIXED: make sure FA renders correct icon
+    eyeBtn.classList.remove("fa-eye-slash");
+    eyeBtn.classList.add("fa-eye");
+    eyeBtn.classList.add("fa-solid"); 
+  } else {
+    // Mask account number
+    accountNoText.innerText = `*********${accountNumber.slice(-3)}`;
+
+    // Return to slashed eye
+    eyeBtn.classList.remove("fa-eye");
+    eyeBtn.classList.add("fa-eye-slash");
+    eyeBtn.classList.add("fa-solid");
+  }
+});
+
+// -------------------------------------------
+// Transactions + Account Summary
+// -------------------------------------------
+let balance = 0;
+const balanceText = document.getElementById("balance");
+const transactionList = document.getElementById("transactions");
+
+function updateBalances() {
+  balanceText.innerText = `$${balance.toFixed(2)}`;
+}
+
+function renderTransaction(type, amount) {
+  const date = new Date().toLocaleString();
+
+  const div = document.createElement("div");
+  div.classList.add("transaction");
+
+  div.innerHTML = `
+    <strong>${type}:</strong> <span>${amount.toFixed(2)}</span><br>
+    <small>${date}</small>
   `;
 
-  alertArea.appendChild(alertDiv);
-
-
-    setTimeout(() => {
-        alertDiv.classList.remove("show");
-        setTimeout(() => alertDiv.remove(), 150);
-    }, 4000);
+  transactionList.prepend(div);
 }
 
+// -------------------------------------------
+// Deposit
+// -------------------------------------------
+const depositBtn = document.getElementById("deposit-btn");
+const depositInput = document.getElementById("deposit-amount");
 
-// ---- Banking Functionality ----
-// This script manages the balance and transaction history of a simple banking application.
-let balance = 0;
-let transactions = [];
-
-const balanceText = document.getElementById("balance");
-balanceText.textContent = `$${balance.toFixed(2)}`;
-
-function updateSummary() {
-    balanceText.textContent = `$${balance.toFixed(2)}`;
-
-    const list = document.getElementById("transactions");
-    list.innerHTML = '';
-
-    transactions.forEach(t => {
-        const div = document.createElement('div');
-        div.classList.add('transaction');
-        div.innerHTML = `
-            <strong>${t.type}</strong>: $${t.amount} <br>
-            <small>${t.date}</small>
-        `;
-        list.prepend(div);
-    });
-}
-
-// DEPOSIT
-document.getElementById("deposit-btn").addEventListener("click", () => {
-  const amount = Number(document.getElementById("deposit-amount").value);
-
+depositBtn.addEventListener("click", () => {
+  const amount = Number(depositInput.value);
   if (!amount || amount <= 0) {
     showAlert("Please enter a valid deposit amount.", "danger");
     return;
   }
 
   balance += amount;
-
-  transactions.push({
-    type: "Deposit",
-    amount: `+$${amount.toFixed(2)}`,
-    date: new Date().toLocaleString()
-  });
-
-  updateSummary();
+  updateBalances();
+  renderTransaction("Deposit", amount);
   showAlert(`Successfully deposited $${amount.toFixed(2)}.`, "success");
+
+  depositInput.value = "";
 });
 
-// WITHDRAW
-document.getElementById("withdraw-btn").addEventListener("click", () => {
-  const amount = Number(document.getElementById("withdraw-amount").value);
+// -------------------------------------------
+// Withdraw / Transfer Out
+// -------------------------------------------
+const withdrawBtn = document.getElementById("withdraw-btn");
+const withdrawInput = document.getElementById("withdraw-amount");
 
+withdrawBtn.addEventListener("click", () => {
+  const amount = Number(withdrawInput.value);
   if (!amount || amount <= 0) {
     showAlert("Please enter a valid transfer amount.", "danger");
     return;
@@ -130,14 +119,56 @@ document.getElementById("withdraw-btn").addEventListener("click", () => {
   }
 
   balance -= amount;
-
-  transactions.push({
-    type: "Transfer Out",
-    amount: `-$${amount.toFixed(2)}`,
-    date: new Date().toLocaleString()
-  });
-
-  updateSummary();
+  updateBalances();
+  renderTransaction("Transfer Out", -amount);
   showAlert(`Transfer of $${amount.toFixed(2)} completed.`, "success");
 
+  withdrawInput.value = "";
 });
+
+// -------------------------------------------
+// Alerts (Success + Error)
+// -------------------------------------------
+function showAlert(message, type) {
+  const alertArea = document.getElementById("alert-area");
+  const wrapper = document.createElement("div");
+
+  wrapper.innerHTML = `
+    <div class="alert alert-${type} alert-dismissible fade show alert-slide" role="alert">
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  `;
+
+  alertArea.append(wrapper);
+
+  setTimeout(() => {
+    wrapper.remove();
+  }, 3500);
+}
+
+// -------------------------------------------
+// Account Number Visibility Toggle
+// -------------------------------------------
+const seeAccountBtn = document.getElementById("see-account-number");
+const accountNoText = document.getElementById("account-no-text");
+let isAccountVisible = false;
+const fullAccountNumber = "1234567890866";
+
+seeAccountBtn.addEventListener("click", () => {
+  isAccountVisible = !isAccountVisible;
+  accountNoText.textContent = isAccountVisible ? fullAccountNumber : "********866";
+  seeAccountBtn.classList.toggle("fa-eye-slash");
+  seeAccountBtn.classList.toggle("fa-eye");
+});
+
+// -------------------------------------------
+// Screen Navigation
+// -------------------------------------------
+function showScreen(screenID) {
+  document
+    .querySelectorAll(".screen")
+    .forEach((s) => s.classList.remove("active"));
+
+  document.getElementById(screenID).classList.add("active");
+}
